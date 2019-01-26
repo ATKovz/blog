@@ -97,14 +97,65 @@ eg: 输入 'invisibleFate', 'visiblity', 输出visibl
 
 
 
-### demo2: 背包问题
+### demo2: 背包问题（待填坑）
 
 
 ## 贪心算法
 
+贪心算法是专门用于计算短期最优解的方法 ，虽然不比动态规划和递归等能稳定找到最优解，但是在解决小问题上比较轻松。
 
 ### demo0: 找零问题
 
-### demo1: 背包问题（贪心算法）
+假定购买了一定价格的商品，求找零现金的最少张数。
 
+以人民币为例，如果以贪心算法为准，找零会从面值最大的开始，余值才往面值小的继续计算(假设找零取到元)：
+	
+	function charge(origin){
+		let remain = origin;
+		let coins = Array(5);
+		for(let i=0;i<coins.length;i++){
+			coins[i] = 0;
+		}
+		if(remain % 100 < remain){
+			coins[0] = Math.floor(remain/100);
+			remain = remain  - coins[0] * 100;
+		}
+		if(remain % 50 < remain){
+			coins[1] = Math.floor(remain/50);
+			remain = remain  - coins[1] * 50;
+		}
+		if(remain % 20 < remain){
+			coins[2] = Math.floor(remain/20);
+			remain = remain  - coins[2] * 20;
+		}
+		if(remain % 10 < remain){
+			coins[3] = Math.floor(remain/10);
+			remain = remain  - coins[3] * 10;
+		}
+		if(remain % 5 < remain){
+			coins[4] = Math.floor(remain/5);
+			remain = remain  - coins[4] * 5;
+		}
+		coins[5] = remain;
+		console.log(coins[0],'张100的')
+		console.log(coins[1],'张50的')
+		console.log(coins[2],'张20的')
+		console.log(coins[3],'张10的')
+		console.log(coins[4],'张5的')
+		console.log(coins[5],'张1的')
+	}
+	charge(314);
+
+输出：
+
+	3 张100的
+	0 张50的
+	0 张20的
+	1 张10的
+	0 张5的
+	4 张1的
+
+
+
+### demo1: 背包问题（贪心算法）（待填坑）
 
