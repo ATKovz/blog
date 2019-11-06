@@ -1,0 +1,1717 @@
+title: 一文搞定JavaScript设计模式
+author: Teo
+tags:
+  - Javascript
+  - 设计模式
+  - 基础
+categories:
+  - Javascript
+date: 2019-10-24 15:00:00
+---
+## 鸭子类型和封装继承多态
+
+### 鸭子类型
+
+> 有一个国王，他觉得世界上最美妙的声音就是鸭子的叫 声，于是国王召集大臣，要组建一个 1000 只鸭子组成的合唱团。大臣们找遍了全国， 终于找到 999 只鸭子，但是始终还差一只，最后大臣发现有一只非常特别的鸡，它的叫 声跟鸭子一模一样，于是这只鸡就成为了合唱团的最后一员。
+
+挪到代码环境下，就是如果有两个对象，他们都有同样的方法，同样的属性，且实现了同样的功能，那他们就可以看做是一样的，
+
+最典型的就是 ArrayLike 对象，ArrayLike 使用下标作为 key 值，且拥有 value，如果再实现了数组的方法，如 pop,push 等方法，那他就可以作为一个数组来被使用。
+
+这就是面向接口编程的应用，在 JAVA 这类静态语言里要实现这点很麻烦，通常都得定义抽象类或者接口，然后再实现，而在 JS 这种动态语言里就方便多了。
+
+### 多态
+
+就拿上面的鸭子和鸡作为例子写一段代码：
+
+```
+const voice = function (animal) {
+  if (animal instanceof Duck) {
+    console.log('嘎嘎嘎')
+  } else if (animal instanceof Chicken) {
+    console.log('咯咯咯')
+  }
+}
+
+const chicken = new Chicken()
+const duck = new Duck()
+voice(chicken) // 嘎嘎嘎
+voice(duck) // 咯咯咯
+```
+
+这就是 JS 里一个最简单的多态实现，但是这种实现的维护性极差，这只是只有一种方法的情况，如果还有 walk，sleep 等方法，我们每次新增一种动物都得去修改各个方法，用不了多久就能变成一份屎山代码。
+
+再看看另外一种实现：
+
+```
+const voice = function(animal) {
+  // 类型检查
+  if (animal instanceof Function)
+  animal.say()
+}
+
+var Duck = function () {}
+
+Duck.prototype.sound = function () {
+  console.log('嘎嘎嘎')
+}
+
+var Chicken = function () {}
+
+Chicken.prototype.sound = function () {
+  console.log('咯咯咯')
+}
+
+voice( new Duck() )      // 嘎嘎嘎
+voice( new Chicken() )        // 咯咯咯
+```
+
+这种时候如果我们需要新增动物，只需要去定义一个新的动物类就行了，同时各种方法的实现也分离开来了，代码的可维护性和简洁度瞬间就高了许多。
+
+### 封装
+
+1. 封装数据
+
+在传统的面向对象语言里，封装是基于 protected，public，private 等访问权限关键字的，虽然现在 TS 里也提供了，但是还是有不少场景用的只是 JS。
+
+JS 里实现私有变量的方法是利用作用域：
+
+```
+const Obj = function () {
+  // 私有变量，一般约定以_开头，在最新的提案里提议私有变量以 ** # **
+  let _name = 'An Object'
+}
+
+```
+
+但是 JS 的私有变量并不是真正的私有变量，他仍然可以通过一定的操作暴露出来:
+
+```
+const Obj = function () {
+  let _name = 'An Object'
+  const getName = function () {
+    return _name
+  }
+
+  // 可以通过name和getName访问到_name
+  return {
+    name: _name,
+    getName,
+  }
+}
+
+const obj = new Obj()
+
+Obj.name
+Obj.getName
+```
+
+ES6 的类也仅仅是上面的语法糖，JS 里并没有真正的类，TS 里的类则真正实现了私有变量。
+
+```
+class AClass {
+  private name = 'a class'
+  public getName = () => {
+    return this.name
+  }
+}
+
+const instance = new AClass()
+
+instance.name // 报错，属性“name”为私有属性，只能在类“AClass”中访问
+instance.getName() // 'a class'
+```
+
+顺带一提，私有变量也可以通过闭包的形式来实现，如缓存处理，防抖节流等都是运用闭包实现了私有变量
+
+### 基于原型链的 OOP
+
+众所周知 JS 的 OOP 是基于原型链的，也就是当 new 一个对象时，实际上执行的操作是：
+
+```
+const createInstance = function (Class, ...args) {
+  const instance = {}
+  instance.__proto__ = Class.prototype
+  Class.apply(instance, args)
+  return instance
+}
+const Obj = function(name) {
+  this.name = `${name} create by constructor`
+}
+Obj.prototype.protoName  = 'create by proto'
+const ins = createInstance(Obj, 'butt')
+ins.protoName // 'create by proto'
+ins.name // `butt create by constructor`
+```
+
+也可以看出获取实例的构造函数的方法有几种
+
+1. instance.**proto**.constructor
+2. Class.prototype.constructor
+3. Object.getPrototypeOf(instance).constructor
+
+同时 instance.**proto**上会同时挂载了 Class.prototype.xxx 和 Class.prototype.constuctor，也就是上面的 instance.**proto** = Class.prototype 这一步
+
+所以修改原型链的操作是全程动态的，而修改构造函数则只影响后续创建的新实例，
+
+如果要干涉已创建的实例，那得重新做一次 Class.apply(instance, args) 的操作，一般不建议在实例创建后修改构造函数。
+
+这也是最不显眼的设计模式： 原型模式
+
+同时也涉及到了 this 的知识点，具体可以看之前写的笔记 [全方位理解 this]('https://teoblog.cn/post/basic-learning-this_190128/')
+
+## 闭包，高阶函数与面向对象
+
+正常情况下变量在无法访问到的那一刻，就已经从内存里移除了，但闭包可以让我们将他保留下来
+
+先看下面这个例子:
+
+```
+let count = 0
+const add = function() {
+  count = count + 1
+  console.log(count)
+}
+add()
+```
+
+这是典型的面向过程编程风格
+
+而在 OOP 中是这样的：
+
+```
+function Counter () {
+  this.count = 0
+  this.init = function (initCount) {
+    this.count = init
+  }
+  this.add = function () {
+    this.count = this.count + 1
+    console.log(this.count)
+  }
+}
+
+const counter = new Counter(0)
+counter.add()
+```
+
+闭包呢？
+
+```
+const counter = (function () {
+  let count = 0
+
+  const add = function () {
+    count = count + 1
+	console.log(count)
+  }
+
+  const init = function (initValue) {
+    count = initValue
+    console.log(count)
+  }
+  return {
+    add,
+    init
+  }
+}())
+counter.add()
+```
+
+在闭包这段，本来在 IIFE 里应该只在声明时立即执行一次，后续 count 占用的内存就应该被释放了才对，可这里我们依旧可以通过 counter 访问到 count 的值，这就是闭包的意义。
+
+### 利用闭包实现命令模式
+
+假定我们要实现一个电视功能，有开启和关闭两个需求，
+
+先看看面向对象版的：
+
+```
+const TV = {
+  trunOn () {
+    console.log('开机')
+  },
+  trunOff () {
+    console.log('关机')
+  }
+}
+
+const TVControler = function(target) {
+  this.target = target
+  this.open = function () {
+    target.turnOn()
+  }
+  this.close = function () {
+    target.turnOff()
+  }
+}
+
+const link = function (controler) {
+  btnOn.onClick = function () {
+    controler.open()
+  }
+
+  btnOff.onClick = function() {
+    controler.close()
+  }
+}
+
+link(new TVControler(TV))
+```
+
+要怎么用闭包实现呢？请看下面：
+
+```
+const TV = {
+  trunOn () {
+    console.log('开机')
+  },
+  trunOff () {
+    console.log('关机')
+  }
+}
+
+// 这里target就被闭包封存了起来
+const createCommamd = function (target) {
+    const open = function () {
+      target.turnOn()
+    }
+    const close = function () {
+      target.turnOff()
+    }
+    return {
+      open,
+      close,
+    }
+}
+
+const setCommand = function (command) {
+    btnOn.onClick = function () {
+    command.open()
+  }
+
+  btnOff.onClick = function() {
+    command.close()
+  }
+}
+setCommand(createCommand(TV))
+```
+
+### 高阶函数
+
+高阶函数就是【参数是函数 | 返回值是新函数】的函数，典型的例子有防抖节流柯里化，出现在函数里的回调函数等。
+
+好比各种库里常见的：
+
+```
+const isType = (type) => {
+  const typeStr = type.slice(0, 1).toUpperCase().concat(type.slice(1))
+  return function (obj) {
+    console.log(`[object ${typeStr}]`, Object.prototype.toString.call(obj), Object.prototype.toString.call(obj) === `[object ${typeStr}}]`)
+    return Object.prototype.toString.call(obj) === `[object ${typeStr}]`
+  }
+}
+```
+
+经过这种处理我们就可以批量生成判断的函数了：
+
+```
+const Type = {}
+const TypeEnum = ['String', 'Number', 'Symbol', 'Function', 'Object', 'Array', 'Undefined', 'Boolean', 'Null']
+
+TypeEnum.forEach(type => {
+  Type['is' + type] = isType(type)
+})
+```
+
+### 用高阶函数和闭包实现单例模式
+
+单例模式也是典型的使用了闭包和高阶函数的应用
+
+```
+const createSingleInstance = (function () {
+  let instance = null
+  return function (Class, ...args) {
+
+    if (instance) {
+      return instance
+    }
+    instance = new Class(...args)
+    return instance
+  }
+})()
+
+const Man = function (name) {
+  this.name = name
+}
+
+const teo = createSingleInstance(Man, 'teo')
+const reagae = createSingleInstance(Man, 'reagae')
+console.log(teo) // Man {name: "teo"}
+console.log(reagae) // Man {name: "teo"}
+```
+
+### 高阶函数实现 AOP
+
+AOP（Aspect-Oriented Programming）是很常用的一种编程理念，把一些和业务无关的代码单独抽离，然后再以插入的方式使用，就像滤网一样，
+
+在设计模式中最为接近的就是 Decorator，装饰者模式。
+
+下面就以 Function 对象作为例子
+
+```
+Function.prototype.before = function(beforeFn) {
+
+  // 注意，这里不能用箭头函数来绑定this, 否则内部的this指向会出错
+  let __self = this
+  return () => {
+    beforeFn.apply(this, arguments)
+    return __self.apply(__self, arguments)
+  }
+}
+
+Function.prototype.after = function(afterFn) {
+
+  // 注意，这里不能用箭头函数来绑定this, 否则内部的this指向会出错
+  let __self = this
+
+  return function() {
+
+    // 如果有before，此时的this已经是经过before包装的(beforeFn + 原函数) 的组合了
+    const res = __self.apply(this, arguments)
+    afterFn.apply(this, arguments)
+    return res
+  }
+}
+
+let saySth = (sth) => {
+  console.log(sth)
+}
+
+saySth = saySth.before((sth) => {
+  console.log('我要说' + sth + '了')
+}).after((sth) => {
+  console.log('我说完' + sth + '了')
+})
+saySth('你妈的为什么')
+
+// 我要说你妈的为什么了
+// 你妈的为什么
+// 我说完你妈的为什么了
+```
+
+防抖节流柯里化这些比较常见的就不一一列举了。
+
+## 单例模式
+
+[单例模式和工厂模式](https://teoblog.cn/post/basic-JSmode_1_190318/)
+
+上面的文章有一点要更正就是惰性单例模式，是在需要的时候才创建，如点击按钮创建弹窗
+
+## 策略模式
+
+策略模式的定义是，定义一系列算法，并封装，然后在需要用的时候调用不同的算法
+
+举个发年终奖的例子，绩效为 S 的人年 终奖有 4 倍工资，绩效为 A 的人年终奖有 3 倍工资，而绩效为 B 的人年终奖是 2 倍工资。假设财务部要求我们提供一段代码，来方便他们计算员工的年终奖。
+
+传统的写法：
+
+```
+const calculateBonus = function( performanceLevel, salary ){
+  if (performanceLevel === 'S') {
+    return salary * 4
+    }
+
+  if (performanceLevel === 'A'){
+    return salary * 3
+  }
+
+  if (performanceLevel === 'B'){
+    return salary * 2
+  }
+}
+```
+
+简单的需求中这种写法没什么问题，但是如果在后续有几十个或者几百个标准的话，这种写法会让函数变得十分的复杂，如果后续出现第三种参数，比如按出勤率算，那改起来工作量是异常大的
+
+下面看看策略模式：
+
+```
+var performanceS = function(){}
+
+performanceS.prototype.calculate = function ( salary ) {
+  return salary * 4
+}
+
+var performanceA = function(){}
+
+performanceA.prototype.calculate = function ( salary ) {
+  return salary * 3
+}
+
+var performanceB = function(){}
+
+performanceB.prototype.calculate = function ( salary ) {
+  return salary * 2
+}
+
+var Bonus = function() {
+  this.salary = null      // 原始工资
+  this.strategy = null    // 绩效等级对应的策略对象
+}
+
+Bonus.prototype.setSalary = function(salary){
+  this.salary = salary    // 设置员工的原始工资
+}
+
+Bonus.prototype.setStrategy = function (strategy) {
+  this.strategy = strategy    // 设置员工绩效等级对应的策略对象
+}
+
+Bonus.prototype.getBonus = function() {
+
+  // 把计算奖金的操作委托给对应的策略对象
+  return this.strategy.calculate( this.salary )
+}
+
+const bonus = new Bonus()
+bonus.setSalary(1000)
+bonus.setStrategy(new performanceS())
+bonus.getBonus()
+```
+
+传统的类写法是比较啰嗦的，这是 OOP 语言的通病，接下来再看看 JS 可以采用的简化写法
+
+JS 中函数也是对象，是一等公民，这意味着对象能出现的位置函数也可以出现，所以就没必要定义一个类了，而用对象来代替类
+
+```
+// 把条件作为key值方便动态调用
+const strategies = {
+  "S": function(salary){
+    return salary * 4
+  },
+  "A": function(salary){
+    return salary * 3
+  },
+  "B": function(salary){
+    return salary * 2
+  },
+  "C": function(salary){
+    return salary * 1
+  },
+}
+
+const calcBonus = function (salary, level) {
+  return strategies[level](salary)
+}
+```
+
+同样是定义算法按需调用，这样看就简洁了不少，比起传统面向过程写法又省略了很多逻辑判断，以最简洁的方法实现了多态。
+
+### 编写一个表单校验工具
+
+策略模式最常见的场景就是表单校验了，通过封装不同的校验规则，在使用的时候看场景套用。
+
+```
+class Validator {
+  init (rules) {
+    this.rules = rules
+  }
+
+  validateMethod = {
+    isRequire: function (value, ruleValue, err) {
+      if (!value && ruleValue) {
+        return err
+      }
+    },
+    min: function (value, ruleValue, err) {
+      if (value < ruleValue) {
+        return err
+      }
+    },
+    max: function (value, ruleValue, err) {
+      if (value > ruleValue) {
+        return err
+      }
+    },
+    custom: function (value, ruleValue, err) {
+      if (!validator(value))
+      return err
+    }
+  }
+  validate (value) {
+    Object.keys(this.rules).map(ruleKey => {
+      const rule = this.rules[ruleKey]
+      const result = this.validateMethod[ruleKey](value, rule.value, rule.errorMessage)
+      if (result) {
+        throw new Error(result)
+      }
+    })
+  }
+}
+const v = new Validator()
+v.init({
+  max: {
+    value: 13,
+    errorMessage: '最大不能超过13'
+  },
+  min: {
+    value: 5,
+    errorMessage: '最小不能低于5'
+  }
+})
+v.validate(11) 
+```
+
+### 优/缺点
+
+策略模式的缺点就是需要定义大量的算法类或者对象，但比起把大量逻辑堆在一个方法里肯定要强不少
+
+同时策略模式可以利用组合，多态避免switch/if else 等逻辑判断语句，提高了代码的可读性
+
+JS里的策略模式特色并不明显，更多是在不知不觉中就用上了，但是从头到尾学习策略模式的特点能让我们知道自己写的是什么代码，在写代码时思路会开阔不少。
+
+
+## 代理模式
+
+当有某个对象不方便或者不需要直接对外暴露接口的时候，我们可以通过一个中间代理类来进行转发。
+
+直接上例子：
+
+```
+class User {
+  constructor (id) {
+    this.accountId = id
+  }
+	withDraw (amount) {
+    const alipay = new Alipay(this.accountId)
+   }
+}
+
+class Alipay {
+  constructor (id) {
+    this.accountId = id
+  }
+	withDraw (amount) {
+    if(this.checkAccount(this.accountId)) {
+      const bank = new Bank(this.accountId)
+    }
+  }
+
+  checkAccount(id) {
+    ...
+  }
+}
+
+class Bank {
+  constructor (id) {
+    this.accountId = id
+  }
+  withDraw (amount) {
+    this.getBalance(amount)
+  }
+}
+
+```
+
+上面就举了一个例子，消费者通过支付宝检测是否有该账号，如果有则在银行提现，通常简单的例子看起来会感觉没什么卵用的样子。但是在部分场景里代理模式就会很有用，假如支付宝提供了企业代购银行理财产品的服务，当银行利率低于2.5%的时候自动提现，而银行本身并没有这服务，这种时候用户就可以通过支付宝来进行对银行业务的访问了：
+
+```
+class Alipay {
+  constructor (id) {
+    this.accountId = id
+  }
+	withDraw (amount) {
+    const bank = new Bank(this.accountId)
+  }
+  withDrawOnRate (rate, amount) {
+    const bank = new Bank(this.accountId)
+    listenBankRate(rate, () => {
+      bank.withDraw(amount)
+    })
+  }
+
+  listenBankRate () {
+    ...
+  }
+}
+```
+
+这种负责监视状态，等到适当的实际再触发的代理我们称之为**虚拟代理**，而先鉴权后再访问的我们称之为**保护代理**。
+
+虚拟代理实现了延迟触发
+
+保护代理实现了过滤无效访问
+
+
+
+### 虚拟代理实现图片懒加载
+
+先看看一个没应用代理模式的给图片加loading图的懒加载，：
+
+```
+const lazyLoad = (function () {
+  const imgNode = document.createElement('img')
+  document.body.appendChild(imgNode)
+  const img = new Image('img link')
+
+  img.onload = function () {
+    imgNode.src = imgNode.src
+  }
+  return {
+    setSrc: function (src) {
+      imgNode.src = src
+    }
+  }
+})
+lazyLoad.setSrc('loading img link')
+
+```
+
+再看看应用了代理模式的图片懒加载：
+
+```
+const normalLoad = (function () {
+  const imgNode = document.createElement('img')
+  document.body.appendChild(imgNode)
+
+  return {
+    setSrc: function (src) {
+      imgNode.src = src
+    }
+  }
+})()
+
+const lazyLoad = (function () {
+  const img = new Image('img link')
+  img.onload = function () {
+    normalLoad.setSrc(img.src)
+  }
+  return {
+    setSrc: function (src) {
+      normalLoad.setSrc('loading img link')
+      img.src = src
+    }
+  }
+})()
+
+lazyLoad.setSrc('img link')
+```
+
+乍看好像用了代理模式比不用要啰嗦很多，但是代理模式让我们实现了 **单一职责** ，让图片的管理得到拆分，负责过程的只负责过程，负责结果的只负责结果。
+
+同时还需要保证**代理和本体接口一致** ， 这样如果当哪天我们不需要代理对象的功能时，就可以直接无缝对接本体，只需要更换对象名即可，无需修改参数和重新调试，这也体现了运用设计模式开发的可维护性。
+
+### 代理模式实现合并请求节流
+
+现在有一个同步单个文件的需求，为了防止短时间发起多个请求对服务器造成过大负担，就需要一个节流函数来合并请求：
+
+```
+const synChronousFile = function(id) {
+  console.log(id + '开始同步')
+}
+
+const proxyChronousFile = (function () {
+  const cache = []
+  let timer
+  return function (id) {
+    cache.push(id)
+    if (timer) return
+    timer = setTimeOut(function () {
+      synChronousFile(cache.join(','))
+      clearTimeout(timer)
+      timer = null
+      cache = []
+    }, 2000)
+  }
+})()
+```
+
+通过上面例子我们就实现了一个合并2秒内的请求的虚拟代理
+
+### 缓存代理
+
+在一些比较损耗性能的计算上，我们可以通过缓存的形式来提高性能，就比如最典型的计算乘积
+
+```
+const factorial = (function () {
+  const cache = {}
+  return function (...args) {
+    if (cache[args]) {
+      console.log('has cache')
+      return cache[args]
+    }
+    return cache[args] = args.reduce((a, b) =>  a * b)
+  }
+})()
+```
+上面是没有运用代理模式的写法，这种写法虽然单次运用没什么问题，但是逻辑和缓存处理堆叠在一起显然缺乏可维护性和可复用性
+
+下面运用代理模式重构:
+
+```
+const multiply = function (...args) {
+  return args.reduce((a, b) => a * b)
+}
+
+const proxyMultiply = (function(...args) {
+  const cache = {}
+  return function (...args) {
+    if (cache[args]) {
+      console.log('has cache')
+      return cache[args]
+    }
+    return cache[args] = multiply(...args)
+  }
+})()
+
+proxyFactorial(3,54,56)
+// 9072
+proxyFactorial(3,54,56)
+// has cache
+// 9072
+```
+
+### 其他代理模式
+
+除了上面提到的虚拟代理，保护代理，缓存代理，还有其他代理模式，篇幅以及实用性有限，就只提下大概的作用
+
+1. 防火墙代理
+
+控制网络资源的访问，保护主题
+
+2. 远程代理
+
+为一个对象在不同的地址空间提供局部代表，在 Java 中，远程代理可以是另一个虚拟机中的对象。 在JS里，webpack中的proxy就是这一种
+
+3. 智能引用代理
+
+取代了简单的指针，它在访问对象时执行一些附加操作，比如计算一个对象被引用的次数， 可以用作数据埋点。 
+
+4. 写时复制代理
+
+通常用于复制一个庞大对象的情况。写时复制代理延迟了复制的过程， 当对象被真正修改时，才对它进行复制操作。写时复制代理是虚拟代理的一种变体，DLL （操作系统中的动态链接库）是其典型运用场景
+
+
+## 发布订阅模式（观察者模式）
+
+发布订阅模式顾名思义，就是当某个事件被发布的时候，触发订阅了该事件的函数，最典型的就是JS里的事件绑定
+
+要编写一个发布订阅模式，首先要知道发布订阅的流程是什么：
+
+1. 首先要指定好谁充当发布者
+
+2. 然后给发布者添加一个缓存列表，用于存放回调函数以便通知订阅者
+
+3. 发布消息的时候，发布者会遍历这个缓存列表，依次触发里面存放的订阅者回调函数
+
+然后我们就可以开始编写一个例子了：
+
+```
+function Subscriber() {
+  this.subscriber = []
+
+  this.addSubscriber = function (item) {
+    this.subscriber.push(item)
+  }
+
+  this.publish = function () {
+    let i = 0
+      length = this.subscriber.length
+
+    this.subscriber.forEach(fn => {
+      fn()
+    })
+  }
+}
+
+```
+
+这是一个最简单的发布订阅，但是显然这是不完整的，这例子并没有事件类型，我们就只能每个事件都创建一个事件实例，然后用实例名区分，显然很不方便
+
+让我们改善一下上面的例子
+
+```
+function Subscriber() {
+  this.subscriber = {}
+
+  this.addSubscriber = function (event, fn) {
+    const subsList = this.subscriber[event] ? this.subscriber[event] : this.subscriber[event] = []
+    this.subscriber[event].push(fn)
+  }
+
+  this.publish = function (event, ...args) {
+    const subsList = this.subscriber[event] ? this.subscriber[event] : this.subscriber[event] = []
+
+    subsList.forEach(fn => {
+      fn(...args)
+    })
+  }
+
+  this.unSubscribe = function (event, target) {
+    const subsList = this.subscriber[event] ? this.subscriber[event] : this.subscriber[event] = []
+
+    subsList.forEach((fn, i) => {
+      console.log(fn, target)
+      if (fn === target) {
+        this.subscriber[event].splice(i, 1)
+      }
+    })
+  }
+}
+```
+
+这次给发布和订阅都添加了事件名，以及取消事件，然后就可以和 addEventListener 一样使用了:
+
+```
+const e = new Subscriber()
+const a = () => {
+	console.log('someEvent1')
+}
+const b = () => {
+	console.log('someEvent2')
+}
+e.addSubscriber('someEvent', a)
+e.addSubscriber('someEvent', b)
+e.addSubscriber('anotherEvent', () => {
+	console.log('anotherEvent')
+})
+e.publish('someEvent')
+// someEvent1
+// someEvent2
+
+e.unSubscribe('someEvent', a)
+e.publish('someEvent')
+// someEvent2
+```
+
+## 登录实例
+
+在登录或者检测登录状态完成后都会设置header的内容用于区分登录前后的状态，通常我们是这样写的：
+
+```
+login.then(res => {
+  setHeader(res.data.avatar)
+  setAuthentic(res.data.userInfo)
+  form.reset()
+})
+```
+
+假定后续我们新增了需求，需要根据登录状态判断article以及sidebar显示的内容，又得在逻辑里添加：
+
+```
+login.then(res => {
+  setHeader(res.data.avatar)
+  setAuthentic(res.data.userInfo)
+  form.reset()
+  article.reset()
+  sidebar.reset()
+})
+```
+日渐增加的需求会把业务逻辑变得十分的冗余，这种时候就可以用发布订阅模式
+
+```
+const e = new Subscriber()
+
+const loginStack = [setHeader, setAuthentic, form.reset, article.reset, sidebar.reset]
+loginStack.forEach(subscriber => {
+  e.addSubscriber('login', subscriber)
+})
+
+login.then(res => {
+  e.publish('login', res)
+})
+```
+
+后续需要添加新需求的时候，我们只需要在loginStack里添加新方法，完全不需要动登录部分的逻辑。
+
+## 组合模式
+
+### 宏命令
+
+文章开头我们以开电视作为例子，用闭包实现过命令模式，让我们看看命令模式中的宏命令
+
+```
+const openTV = {
+  exec: function () {
+    console.log('电视打开了')
+  }
+}
+const openTIM = {
+  exec: function () {
+    console.log('TIM打开了')
+  }
+}
+const openSTEAM = {
+  exec: function () {
+    console.log('STEAM打开了')
+  }
+}
+const MacroCommand = function () {
+  this.commandList = []
+  this.add = function (fn) {
+    this.commandList.push(fn)
+  }
+  this.exec = function() {
+    this.commandList.forEach(fn => {
+      fn.exec()
+    })
+  }
+}
+const macroCommand = new MacroCommand()
+macroCommand.add(openTV)
+macroCommand.add(openTIM)
+macroCommand.add(openSTEAM)
+```
+
+这种模式组成了一个树状结构，调用exec方法，会自顶向下执行任务，
+
+### 复合宏命令
+
+组合模式正是利用这种树状结构，封装一系列的方法，在需要时自顶向下执行任务
+
+```
+const MacroCommand = function () {
+  this.commandList = []
+  this.add = function (fn) {
+    this.commandList.push(fn)
+  }
+  this.exec = function() {
+    this.commandList.forEach(fn => {
+      fn.exec()
+    })
+  }
+}
+
+// 启动组
+
+const openTV = {
+  exec: function () {
+    console.log('电视打开了')
+  }
+}
+const openTIM = {
+  exec: function () {
+    console.log('TIM打开了')
+  }
+}
+const openSTEAM = {
+  exec: function () {
+    console.log('STEAM打开了')
+  }
+}
+const openCommand = new MacroCommand()
+openCommand.add(openTV)
+openCommand.add(openTIM)
+openCommand.add(openSTEAM) 
+
+// 购物组
+
+const buyDinner = {
+  exec: function () {
+    console.log('外卖叫好了')
+  }
+}
+const buyCoca = {
+  exec: function () {
+    console.log('可乐买好了')
+  }
+}
+const shoppingCommand = new MacroCommand()
+shoppingCommand.add(buyDinner)
+shoppingCommand.add(buyCoca)
+
+// 总命令，树状执行
+const mainCommand = new MacroCommand()
+mainCommand.add(openCommand)
+mainCommand.add(shoppingCommand)
+mainCommand.exec()
+
+// 电视打开了
+// TIM打开了
+// STEAM打开了
+// 外卖叫好了
+// 可乐买好了
+```
+
+### 引用父方法
+
+虽然是树状调用，但偶尔也有需要向同级/父级传值的需求，所以要有能引用父级组合方法的途径，这种时候就需要修改类的add方法
+
+```
+const MacroCommand = function () {
+  this.commandList = []
+  this.add = function (fn) {
+    // 将父级添加到子方法的parent属性上
+    fn.parent = this
+    this.commandList.push(fn)
+  }
+  this.exec = function() {
+    this.commandList.forEach(fn => {
+      fn.exec()
+    })
+  }
+}
+```
+
+### 优/缺点
+
+由于组合模式规定了必须有add和exec2个属性，所以我们可以忽略组合对象和单个对象的区别，在树状结构的场景下使用起来十分遍历，但在高度复杂的场景里可能会让我们很难辨别各方法的区别。
+
+
+## 模板方法模式
+
+在不少场景里，一些相同或者近似的方法会在多个子类里出现，例如现在需要编写一个程序模拟泡茶和泡咖啡，流程如下
+
+
+- 咖啡
+
+1. 烧水
+
+2. 加咖啡粉/豆
+
+3. 倒水
+
+4. 加奶
+
+
+- 茶
+
+1. 烧水
+
+2. 加茶叶
+
+3. 倒水
+
+4. 加糖
+
+可以看出，2者的流程十分的接近，这种时候我们就可以把共同点抽离出来，然后有差异的部分进行抽象化，就可以用一个类创建2个实例来表现整个流程了
+
+```
+const Beverage = function() {
+  this.boiler = function() {
+    console.log('烧水')
+  }
+  this.addMaterial = function() {}
+  this.pourWater = function() {
+    console.log('倒水')
+  }
+  this.addCondition = function() {}
+
+  this.init = function() {
+    this.boiler()
+    this.addMaterial()
+    this.pourWater()
+    this.addCondition()
+  }
+}
+const Tea = new Beverage()
+Tea.prototype.addMaterial = function() {
+  console.log('加茶叶')
+}
+Tea.prototype.addCondition = function() {
+  console.log('加糖')
+}
+```
+
+模板方法就是类中的init方法，init作为一个指导方法，封装了子类的算法模板，指导子类应该按什么顺序执行。
+
+### 抽象类
+
+可以看出，这种先定义，后在子类中重写的模式就是抽象类的写法，由于JS里没有抽象类，所以暂时拿TS示范
+
+```
+abstract class Beverage {
+  boiler () {
+    console.log('烧水')
+  }
+  abstract addMaterial (): any;
+  pourWater () {
+    console.log('倒水')
+  }
+  abstract addCondition (): any;
+
+  init () {
+    this.boiler()
+    this.addMaterial()
+    this.pourWater()
+    this.addCondition()
+  }
+}
+
+class Tea extends Beverage {
+  addMaterial () {
+    console.log('加原料')
+  }
+
+  addCondition () {
+    console.log('加调料')
+  }
+}
+```
+
+抽象类只能通过继承获得父类方法，同时子类需要重写父类的抽象方法，这和模板方法模式十分契合，但JS里没有抽象类要怎么解决呢？
+
+如果不用TS的话，JS只能通过手动抛出警告的方式来在调用时提醒开发者重写方法了。
+
+```
+const Beverage = function() {
+  this.boiler = function() {
+    console.log('烧水')
+  }
+  this.addMaterial = function() {
+    throw new Error('必须重写该方法')
+  }
+  this.pourWater = function() {
+    console.log('倒水')
+  }
+  this.addCondition = function() {
+    throw new Error('必须重写该方法')
+  }
+
+  this.init = function() {
+    this.boiler()
+    this.addMaterial()
+    this.pourWater()
+    this.addCondition()
+  }
+}
+```
+
+### 模板方法模式的应用场景
+
+最典型的应用场景就是生命周期，就拿react的生命周期作为例子，如果用模板方法模式模仿react的生命周期顺序，就是下面这样：
+
+```
+class Component {
+  constructor () {}
+
+  componentWillMount () {}
+
+  render () {}
+
+  componentDidMount () {}
+
+  listenComponentUpdate () {
+    this.componentWillUpdate()
+    this.update()
+    this.render()
+  }
+
+  componentWillUpdate () {}
+
+  update () {}
+
+  init () {
+    // 构建新实例时会自动调用constructor
+    // this.constructor()
+    this.componentWillMount()
+    this.render()
+    this.componentDidMount()
+    listenComponentUpdate ()
+  }
+}
+```
+
+同时我们还可以在加入钩子方法，
+
+```
+init () {
+  // 构建新实例时会自动调用constructor
+  // this.constructor()
+  this.componentWillMount()
+  this.render()
+  this.componentDidMount()
+  if (this.shouldComponentUpdate()) {
+    this.update()
+  }
+}
+```
+
+### 不一定要通过类和继承
+
+由于JS比较特殊，我们可能更多的使用对象而不是类，所以模板方法模式也不一定是通过类的形式实现
+
+```
+const Beverage = function (options) {
+  const boiler = function() {
+    console.log('烧水')
+  }
+  const addMaterial =  options.addMaterial || function() {
+    throw new Error('必须重写该方法')
+  }
+  const pourWater = function() {
+    console.log('倒水')
+  }
+  const addCondition = options.addCondition || function() {
+    throw new Error('必须重写该方法')
+  }
+
+  const init = function() {
+    this.boiler()
+    this.addMaterial()
+    this.pourWater()
+    this.addCondition()
+  }
+
+  const F = function() {}
+
+  F.prototype.init = init
+
+  return F
+}
+
+const Tea = Beverage({
+  addMaterial: function() {},
+  addCondition: function() {},
+})
+const blackTea = new Tea()
+blackTea.init()
+```
+
+## 享元模式
+
+享元模式这名字看起来不好理解，结合他的作用个人认为应该叫（共）享元（对象）模式，享元模式是用于性能优化的一种模式，提倡尽量少创建新实例，多复用已有实例
+
+假定现在有个需求，需要给50张图片截图
+
+常规的面向对象写法应该是
+
+```
+class Camera {
+  constructor (image) {
+    this.image = image
+  }
+
+  shoot () {}
+}
+
+const imageArr = [...] // 50张照片
+
+imageArr.forEach(img => {
+  new Camera(img).shoot()
+})
+```
+
+这种写法会创建50个实例，显然性能的损耗会很大。
+
+如果用最简陋的享元模式实现:
+
+```
+class Camera {
+  constructor (image) {
+    this.image = image
+  }
+
+  setImage () {
+    this.image = image
+  }
+
+  shoot () {}
+}
+
+const imageArr = [...] // 50张照片
+
+const camera = new Camera()
+imageArr.forEach(img => {
+  camera.setImage(img)
+  camera.shoot()
+})
+```
+
+### 外部状态和内部状态
+
+先看看内部状态和外部状态的特点
+
+- 内部状态存储于对象内部。
+
+- 内部状态可以被一些对象共享。  
+
+- 内部状态独立于具体的场景，通常不会改变。 
+
+- 外部状态取决于具体的场景，并根据场景而变化，外部状态不能被共享
+
+上面的例子中，image就是一个外部状态，如果此时需要加多一个截图场景，如客户端或者服务端，我们就可以把他作为内部状态，在创建实例时就确定下来，
+
+一般来说，有多少种内部状态搭配就能存在多少个共享对象，像区分客户端和服务端这种确定枚举值的就可以作为内部状态
+
+而图片这种可变而且每个都不一致的就可以作为外部状态
+
+### 文件上传实例
+
+假定现在有一个上传文件的需求，单次上传文件的个数不限
+
+```
+class Upload {
+  createFile = function (id) {
+    const div = document.createElement('div')
+    div.innerHTML = `
+      <div>文件名: ${this.fileName}</div>
+      <div>文件格式: ${this.type}</div>
+      <div>文件大小: ${this.size}</div>
+    `
+    document.body.appendChild(div)
+  }
+  init (fileName, type, size, id) {
+    this.id = id
+    this.type = type
+    this.fileName = fileName
+    this.size = size
+    this.createFile()
+  }
+}
+
+// 假定上传事件触发时的回调函数：
+window.onUpload = function (type, fileList) {
+  let id = 0
+  fileList.forEach(file => {
+    const { fileName, size } = file
+    const upload = new Upload()
+    upload.init(type, fileName, size, id)
+    id++
+  })
+}
+```
+
+假定现在用户同时上传了1000个文件，如果是chrome还好，如果是IE这种老旧的浏览器很可能会直接崩溃
+
+下面用享元模式重构下：
+
+```
+// 先剥离外部状态
+const Upload = funciton(type) {
+  this.type = type
+
+  createFile = function (id) {
+    const div = document.createElement('div')
+    div.innerHTML = `
+      <div>文件名: ${this.fileName}</div>
+      <div>文件格式: ${this.type}</div>
+      <div>文件大小: ${this.size}</div>
+    `
+    document.body.appendChild(div)
+  }
+
+  const init = function (fileName, size, id) {
+    this.id = id
+    this.fileName = fileName
+    this.size = size
+    this.createFile(id)
+  }
+}
+
+// 结合类单例模式实例化
+const SingleUpload = (function(){
+  const factory = {}
+  return function(type) {
+    if (factory[type]) {
+      return factory[type]
+    }
+    return factory[type] = new Upload(type)
+  }
+})()
+
+// 假定上传事件触发时的回调函数：
+window.onUpload = function (type, fileList) {
+  let id = 0
+  fileList.forEach(file => {
+    const { fileName, size } = file
+    const upload = SingleUpload(type)
+    upload.init(fileName, size, id)
+    id++
+  })
+}
+```
+
+重构过后，我们只需要创建和文件格式相同数目的实例就可以了
+
+## 职责链模式
+
+职责链模式和他名字十分接近，就是让工具链上多个对象都有能力处理请求，避免一个请求失败后会顺着职责链继续执行，直到能成功处理请求
+
+### 实例
+
+假定现在有这样一个需求，某商场发起预售活动，在预约时付了500元定金的在正式发售时可以拿到100元优惠券，200元定金的可以活得20元优惠券，而没有参与的用户没有优惠券,同时库存也会是单独的一个数据
+
+模拟一个后端返回数据体：
+
+```
+payload: {
+  orderType: 0 | 1 //  0未参与预售，1参与预售
+  payAmount: 200 | 500 // 预支付金额
+  stock: number // 普通库存
+}
+```
+
+然后就可以编写业务逻辑了：
+
+```
+checkStatus (payload) {
+  const { orderType, payAmount, stock } = payload
+  if (orderType === 1) {
+    if (payAmount === 200) {
+      console.log('预付200，可领20')
+    } else {
+      console.log('预付500，可领100')
+    }
+  } else {
+      if (stock > 0) {
+        console.log('非预付用户，可购买')
+      } else {
+        console.log('非预付用户，货源不足')
+      }
+  }
+}
+```
+
+但是这样就成了一份最典型的反面教材，在主函数里用了大量的用了嵌套if...else导致代码可读性极低
+
+下面用职责链模式重构：
+
+```
+class Chain {
+  constructor (fn) {
+    this.fn = fn
+  }
+
+  successor = null
+
+  setSuccessor = function(fn) {
+    this.successor = fn
+  }
+
+  passRequest = function(...params) {
+    console.log(this.successor)
+    return this.fn(...params) || (this.successor && this.successor.passRequest.apply(this.successor, params))
+  }
+}
+
+const pay500 = function (orderType, payAmount, stock) {
+  if (orderType === 1 && payAmount === 500) {
+    console.log('预付500，可领100')
+    return true
+  }
+  return false
+}
+
+const pay200 = function (orderType, payAmount, stock) {
+  if (orderType === 1 && payAmount === 200) {
+    console.log('预付200，可领20')
+    return true
+  }
+  console.log('pay200', orderType)
+  return false
+}
+const normal = function (orderType, payAmount, stock) {
+  if (stock > 0) {
+    console.log('非预付用户，可购买')
+    return true
+  } else {
+    console.log('非预付用户，货源不足')
+    return true
+  }
+}
+
+const chain500 = new Chain(pay500)
+const chain200 = new Chain(pay200)
+const chainNormal = new Chain(normal)
+chain500.setSuccessor(chain200)
+chain200.setSuccessor(chainNormal)
+chain500.passRequest(1, 200, 32) // 预付500，可领100
+chain500.passRequest(1, 500, 32) // 预付200，可领20
+chain500.passRequest(0, 500, 3) // 非预付用户，可购买
+chain500.passRequest(0, 500, 0) // 非预付用户，货源不足
+```
+
+以上例子运用了职责链模式分离了各逻辑，但有点缺陷，上面我们是明确末端并返回了true用于打断职责链，但在业务场景中我们很可能不清楚末端函数是哪一个。
+
+而且过长的职责链可能会带来性能损耗。
+
+职责链模式也可以以我们文章开头提到的AOP来实现，
+
+```
+Function.prototype.after = function(fn) {
+  const _self = this
+  return function(...args) {
+    const res = _self.apply(this, arguments)
+    if (res) {
+      return res
+    }
+    return fn.call(this, ...args)
+  }
+}
+const checkStatus = pay500.after(pay200).after(normal)
+```
+
+但同样的如果职责链过长会导致函数难以阅读。
+
+## 装饰者模式
+
+装饰者模式是比较常见的一种设计模式，像阿里全家桶，antd的form，dva中的connect都是运用了装饰者模式的例子
+
+### 面向对象的装饰者模式
+
+先上例子：
+
+```
+class MissleDecorator {
+  plane: any = null
+  constructor (plane: any) {
+    this.plane = plane
+  }
+
+  shoot () {
+    this.plane.fire()
+    console.log('boom!!!')
+  }
+}
+
+class Plane {
+  fire () {
+    console.log('biu biu biu')
+  }
+}
+
+new MissleDecorator(new Plane()).shoot() // biubiubiu boom!!!
+```
+
+### 装饰函数
+
+有时在一些老项目里，有一些老模块过于冗杂，导致开发者不想去改变他源码，在这基础上又想添加新功能，那就是装饰函数发挥作用的时候了
+
+```
+let oldFn = function () {
+  console.log('old function')
+}
+
+const _tempFn = oldFn
+
+oldFn = function () {
+  _tempFn()
+  console.log('newFn')
+}
+```
+
+还有这种场景，当我们想给一个对象绑定某个事件监听，但又不确定之前有没有人绑定过，就可以用装饰函数防止覆盖了原来的代码了
+
+```
+window.onload = function () {
+  console.log('old event')
+}
+
+const _onload = window.onload || function() {}
+
+window.onload = function () {
+  _onload()
+  console.log('new event')
+}
+```
+
+如果遇见this指向的问题，就得把原本的this也作为参数传入绑定确保不出问题了
+
+### AOP
+
+文章开头提到的AOP其实就是一个装饰者模式，具体可以看 
+
+<a href="#高阶函数实现-AOP">高阶函数实现AOP</a> 这部分
+
+### 装饰者模式和代理模式
+
+代理模式和装饰者十分相近，主要的区别在于，装饰者模式是为函数加入功能，而代理模式是代替函数执行,
+
+也就是代理模式的功能一开始就确定了，而装饰者模式是后续可变的。
+
+## 状态模式
+
+状态模式是根据内部状态决定函数执行的一种设计模式，就像电器开关，同一个按钮在不同状态下执行的操作是不一样的
+
+```
+class Light {
+  state = false
+  
+  exec () {
+    if (this.state) {
+      console.log('关灯')
+      this.state = false
+      return
+    }
+    console.log('开灯')
+    this.state = true
+  }
+}
+
+const btn = new Light()
+
+btn.exec()
+btn.exec()
+```
+
+这种写法只有开关2种状态还好，如果有各种颜色切换，那就得修改类源码的逻辑，显然不符合开放封闭原则
+
+再用状态模式重构下：
+
+```
+class StrongLightState {
+  constructor (light) {
+    this.light = light
+  }
+
+  pressButton () {
+    console.log('现在是强灯,下个状态切换到暗灯状态')
+    this.light.setState(this.light.weakLightState)
+  }
+}
+class WeakLightState {
+  constructor (light) {
+    this.light = light
+  }
+
+  pressButton () {
+    console.log('现在是弱灯,下个状态切换到关灯状态')
+    this.light.setState(this.light.offLightState)
+  }
+}
+class OffLightState {
+  constructor (light) {
+    this.light = light
+  }
+
+  pressButton () {
+    console.log('现在是关灯,下个状态切换到强灯状态')
+    this.light.setState(this.light.strongLightState)
+  }
+}
+class Light {
+  nextState = null
+
+  offLightState = new OffLightState(this)
+  weakLightState = new WeakLightState(this)
+  strongLightState = new strongLightState(this)
+
+  setState(state) {
+    this.nextState = state
+  }
+
+  init () {
+    this.state = this.offLightState
+  }
+
+  exec () {
+    this.nextState.pressButton()
+  }
+}
+
+const light = new Light()
+light.init()
+light.exec()
+```
+
+经过这样处理，每个模块都被单独抽离了，同时赋予了共有的pressButton方法由于省略大量的判断逻辑，代码在多分支的情况下更便于管理和阅读，
+
+如果需要新增状态，只需要在构造函数中添加这种状态，然后找到需要插入的位置，将前一个的nextState指向新状态，同时把新状态的nextState指向原本位于nextState的函数即可
+
+状态模式更像是命令模式和链表的结合，由于每个状态都要拥有同一个方法，所以如果用了TS可以像前面一样定义一个抽象类强制用户重写。
+
+### 更复杂的状态模式
+
+> 待更新

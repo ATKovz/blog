@@ -1,7 +1,10 @@
----
 title: 大勺掏粪吃着香 -- Webpack学习笔记（上）
-date: 2019-01-15 
-tags: 学轮子
+tags:
+  - 学轮子
+  - JavaScript
+categories:
+  - JavaScript
+date: 2019-01-15 00:00:00
 ---
 	
 webpack是前端工程化必备的打包工具，虽然现在大多数脚手架已经极大简化了webpack的配置，但是为了更灵活的解决项目中的问题，webpack的学习还是十分有必要的。

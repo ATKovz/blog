@@ -1,7 +1,10 @@
----
 title: 大勺掏粪吃着香 -- Webpack学习笔记（下）
-date: 2019-01-15 
-tags: 学轮子
+tags:
+  - 学轮子
+  - webpack
+  - JavaScript
+categories: []
+date: 2019-01-15 00:00:00
 ---
 
 接着上篇：

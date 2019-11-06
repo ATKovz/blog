@@ -1,7 +1,10 @@
----
-title: React Hooks API学习笔记 
-date: 2019-01-14 10:33:49
-tags: 学轮子
+title: React Hooks API学习笔记
+tags:
+  - 学轮子
+  - JavaScript
+  - hook
+categories: []
+date: 2019-01-14 10:33:00
 ---
 
 > 目前Hooks还处于提案阶段，要使用得自行更新16.7.0-alpha.0以上的版本。

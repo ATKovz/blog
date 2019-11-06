@@ -1,8 +1,9 @@
-
----
 title: React Hooks——概述部分的翻译
-date: 2019-1-10 13:33:49
-tags: 学轮子
+tags:
+  - 学轮子
+categories:
+  - JavaScript
+date: 2019-01-10 13:33:00
 ---
 
 菜鸡英文翻给自己看，其他的写学习笔记了 ![](http://www.teoblog.cn/myimgstore_______/1.jpg)

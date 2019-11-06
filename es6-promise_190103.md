@@ -1,7 +1,10 @@
----
-title: ES6异步解决方案 —— Promise 
-date: 2019-01-01 15:33:49
-tags: 基础
+title: ES6异步解决方案 —— Promise
+tags:
+  - 基础
+  - es6
+  - JavaScript
+categories: []
+date: 2019-01-01 15:33:00
 ---
 
 ES6学习/复习笔记均参考阮一峰老师的教程：

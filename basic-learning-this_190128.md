@@ -1,8 +1,9 @@
-
----	
 title: 全方位理解this
-tags: 基础
-date: 2019-01-28
+tags:
+  - 基础
+  - JavaScript
+categories: []
+date: 2019-01-28 00:00:00
 ---
 >你所不知道的JS（上）this解析章节,学习笔记及一点疑惑
 
