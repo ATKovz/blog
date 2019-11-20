@@ -1,3 +1,14 @@
+title: Linux常规知识记录
+author: Teo
+tags:
+  - Linux
+  - 工具链
+categories:
+  - 工具链
+date: 2019-11-11 10:10:00
+---
+
+
 玩了1年多服务器，也没怎么正经学习linux，这次整体补下相关知识
 
 ## 包管理

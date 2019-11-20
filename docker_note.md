@@ -1,4 +1,14 @@
-在真实的项目开发中，为了避免很多环境问题，项目中常常会使用docker，作为一个开发人员也需要掌握docker
+title: Docker入门
+author: Teo
+tags:
+  - Docker
+  - 工具链
+categories:
+  - 工具链
+date: 2019-11-18 11:10:00
+---
+
+在业务开发中，为了避免很多环境问题，项目中常常会使用docker，作为一个开发人员也需要掌握docker
 
 - 什么是docker
 
