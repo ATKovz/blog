@@ -158,6 +158,10 @@ varible 存放运行时会改变内容的文件，如各种日志
 
 make directory 创建文件夹
 
+- touch [filename]
+
+创建文件
+
 - vim [filename]
 
 用vim打开文件，不存在就创建，所以可以拿来创建文件
@@ -217,9 +221,37 @@ eg:
 
 ### 环境变量
 
-使用echo $PATH可以打印出环境变量目录
+- 查看单个环境变量
+
+使用echo $PATH可以打印出可执行目录，$PATH就是一个环境变量
 
 默认是 usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin 这5个文件夹
+
+- 查看全部环境变量
+
+> env 
+
+- 添加环境变量的方法：
+
+在 /etc/profile 文件里export就行
+
+eg:
+
+> export $JAVA_HOME=/opt/jdk/;$STH=/opt/sth;
+
+修改后如果不重新登录，需要使用以下命令让改动生效：
+
+> source /etc/profile
+
+- 添加临时环境变量：
+
+退出bash后就失效的临时变量，直接在bash用export 
+
+eg:
+
+> export app=/app
+
+> echo $app
 
 ### 常用的系统命令
 
