@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+  </style>
+</head>
+<body>
+  <canvas width="1000" height="1000" id='cvs'></canvas>
+</body>
+<script>
+  const drawLine = (ctx, str, x, y, color = '#000') => {
+    // 单独设置颜色
+    ctx.save()
+    ctx.font = 'bold 14px Arial'
+    ctx.fillStyle = color
+    ctx.fillText(str, x, y)
+    ctx.restore()
+  }
+  const main = function () {
+    document.createElement('d')
+    
+    const cvs = document.getElementById('cvs')
+    
+    const ctx = cvs.getContext('2d')
+    ctx.strokeStyle = 'red'
+    ctx.fillStyle = 'rgb(0, 255, 0, .3)'
+
+    // 绘制实心 (x, y, width, height)
+    ctx.fillRect(0, 0, 30, 30)
+    drawLine(ctx, '绘制实心', 0, 50)
+
+    // 绘制空心
+    ctx.strokeRect(50, 50, 30, 30)
+    drawLine(ctx, '绘制空心', 50, 120)
+    
+    // 擦除rect
+    ctx.clearRect(14, 14, 15, 15)
+    drawLine(ctx, '擦除矩形', 50, 30)
+
+    ctx.strokeRect(70, 70, 30, 30, 15)
+
+    ctx.beginPath()
+
+    ctx.strokeStyle = 'green'
+    // x 100, y 100 为圆心，绘制 r 为20的圆, 从6点钟画到9点钟(0度 为 3点钟方向， 2 PI也为3点钟方向)
+    ctx.arc(120, 120, 20, 0.5 * Math.PI, 1 * Math.PI)
+    drawLine(ctx, '绘制弧线', 120, 130)
+    
+    ctx.moveTo(150, 150)
+    ctx.lineTo(150, 250)
+    drawLine(ctx, 'lineTo绘制直线', 80, 250)
+
+    // storke 后才会绘制
+    
+    // moveto 的移动不会下笔
+    // 而 arc 是先从目前点移动到指定位置开始画
+    // 所以这里会有一条线而不是单纯一个圆
+    ctx.moveTo(250, 270)
+    drawLine(ctx, 'moveto 250 270', 255, 280)
+    // 从此后整张画布旋转后画，原本的不受影响
+    // ctx.rotate(0.5 * Math.PI)
+    drawLine(ctx, '用(arc 以圆心和半径为基础)开始绘制弧线', 200, 320,)
+    ctx.arc(250, 250, 50, 0.5 * Math.PI, 0)
+    drawLine(ctx, '绘制弧线结束', 230, 250,)
+    
+    // 从上面的结束点开始，画一个经过(360, 340) (330, 200) r = 30 的圆
+    ctx.arcTo(360, 240, 330, 200, 30,)
+    drawLine(ctx, '用(arcTo 以弧线经过的位置和半径为基础)开始绘制弧线', 200, 180,)
+    ctx.stroke()
+    
+    ctx.moveTo(500, 500)
+    drawLine(ctx, '移动到(500, 500)', 500, 500,)
+    // 绘制的是线条而不是图形
+    drawLine(ctx, 'Rect绘制的是线条而不是图形', 500, 530)
+    ctx.rect(400, 400, 100, 100)
+    
+    ctx.moveTo(200, 400)
+    drawLine(ctx, '移动到（200， 400），并经过', 100, 420)
+    drawLine(ctx, '(100, 400) (100, 300)绘制bazier曲线', 100, 440)
+    // drawLine(ctx, '开始绘制bazier曲线', 100, 400)
+    ctx.quadraticCurveTo(100, 400, 100, 300, 40)
+    // drawLine(ctx, '开始绘制bazier曲线', 100, 400)
+    ctx.moveTo(100, 400)
+    ctx.save()
+    ctx.fillStyle = 'red'
+    ctx.fillRect(100, 400, 5, 5)
+    ctx.fillRect(100, 300, 5, 5)
+    ctx.restore()
+    ctx.stroke()
+    drawLine(ctx, 'arc arcto bazier 都是路径， 最上面2个是形状', 100, 540, 'red')
+
+  }
+  window.addEventListener('load', main)
+</script>
+</html>
