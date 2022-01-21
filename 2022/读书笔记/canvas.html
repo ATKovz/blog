@@ -10,9 +10,11 @@
 </head>
 <body>
   <canvas width="1000" height="1000" id='cvs'></canvas>
+
+  <img id="img" src="data:image/gif;base64,R0lGODlhPQBEAPeoAJosM//AwO/AwHVYZ/z595kzAP/s7P+goOXMv8+fhw/v739/f+8PD98fH/8mJl+fn/9ZWb8/PzWlwv///6wWGbImAPgTEMImIN9gUFCEm/gDALULDN8PAD6atYdCTX9gUNKlj8wZAKUsAOzZz+UMAOsJAP/Z2ccMDA8PD/95eX5NWvsJCOVNQPtfX/8zM8+QePLl38MGBr8JCP+zs9myn/8GBqwpAP/GxgwJCPny78lzYLgjAJ8vAP9fX/+MjMUcAN8zM/9wcM8ZGcATEL+QePdZWf/29uc/P9cmJu9MTDImIN+/r7+/vz8/P8VNQGNugV8AAF9fX8swMNgTAFlDOICAgPNSUnNWSMQ5MBAQEJE3QPIGAM9AQMqGcG9vb6MhJsEdGM8vLx8fH98AANIWAMuQeL8fABkTEPPQ0OM5OSYdGFl5jo+Pj/+pqcsTE78wMFNGQLYmID4dGPvd3UBAQJmTkP+8vH9QUK+vr8ZWSHpzcJMmILdwcLOGcHRQUHxwcK9PT9DQ0O/v70w5MLypoG8wKOuwsP/g4P/Q0IcwKEswKMl8aJ9fX2xjdOtGRs/Pz+Dg4GImIP8gIH0sKEAwKKmTiKZ8aB/f39Wsl+LFt8dgUE9PT5x5aHBwcP+AgP+WltdgYMyZfyywz78AAAAAAAD///8AAP9mZv///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAKgALAAAAAA9AEQAAAj/AFEJHEiwoMGDCBMqXMiwocAbBww4nEhxoYkUpzJGrMixogkfGUNqlNixJEIDB0SqHGmyJSojM1bKZOmyop0gM3Oe2liTISKMOoPy7GnwY9CjIYcSRYm0aVKSLmE6nfq05QycVLPuhDrxBlCtYJUqNAq2bNWEBj6ZXRuyxZyDRtqwnXvkhACDV+euTeJm1Ki7A73qNWtFiF+/gA95Gly2CJLDhwEHMOUAAuOpLYDEgBxZ4GRTlC1fDnpkM+fOqD6DDj1aZpITp0dtGCDhr+fVuCu3zlg49ijaokTZTo27uG7Gjn2P+hI8+PDPERoUB318bWbfAJ5sUNFcuGRTYUqV/3ogfXp1rWlMc6awJjiAAd2fm4ogXjz56aypOoIde4OE5u/F9x199dlXnnGiHZWEYbGpsAEA3QXYnHwEFliKAgswgJ8LPeiUXGwedCAKABACCN+EA1pYIIYaFlcDhytd51sGAJbo3onOpajiihlO92KHGaUXGwWjUBChjSPiWJuOO/LYIm4v1tXfE6J4gCSJEZ7YgRYUNrkji9P55sF/ogxw5ZkSqIDaZBV6aSGYq/lGZplndkckZ98xoICbTcIJGQAZcNmdmUc210hs35nCyJ58fgmIKX5RQGOZowxaZwYA+JaoKQwswGijBV4C6SiTUmpphMspJx9unX4KaimjDv9aaXOEBteBqmuuxgEHoLX6Kqx+yXqqBANsgCtit4FWQAEkrNbpq7HSOmtwag5w57GrmlJBASEU18ADjUYb3ADTinIttsgSB1oJFfA63bduimuqKB1keqwUhoCSK374wbujvOSu4QG6UvxBRydcpKsav++Ca6G8A6Pr1x2kVMyHwsVxUALDq/krnrhPSOzXG1lUTIoffqGR7Goi2MAxbv6O2kEG56I7CSlRsEFKFVyovDJoIRTg7sugNRDGqCJzJgcKE0ywc0ELm6KBCCJo8DIPFeCWNGcyqNFE06ToAfV0HBRgxsvLThHn1oddQMrXj5DyAQgjEHSAJMWZwS3HPxT/QMbabI/iBCliMLEJKX2EEkomBAUCxRi42VDADxyTYDVogV+wSChqmKxEKCDAYFDFj4OmwbY7bDGdBhtrnTQYOigeChUmc1K3QTnAUfEgGFgAWt88hKA6aCRIXhxnQ1yg3BCayK44EWdkUQcBByEQChFXfCB776aQsG0BIlQgQgE8qO26X1h8cEUep8ngRBnOy74E9QgRgEAC8SvOfQkh7FDBDmS43PmGoIiKUUEGkMEC/PJHgxw0xH74yx/3XnaYRJgMB8obxQW6kL9QYEJ0FIFgByfIL7/IQAlvQwEpnAC7DtLNJCKUoO/w45c44GwCXiAFB/OXAATQryUxdN4LfFiwgjCNYg+kYMIEFkCKDs6PKAIJouyGWMS1FSKJOMRB/BoIxYJIUXFUxNwoIkEKPAgCBZSQHQ1A2EWDfDEUVLyADj5AChSIQW6gu10bE/JG2VnCZGfo4R4d0sdQoBAHhPjhIB94v/wRoRKQWGRHgrhGSQJxCS+0pCZbEhAAOw==">
 </body>
 <script>
-  const drawLine = (ctx, str, x, y, color = '#000') => {
+  const drawText = (ctx, str, x, y, color = '#000') => {
     // 单独设置颜色
     ctx.save()
     ctx.font = 'bold 14px Arial'
@@ -24,6 +26,8 @@
     document.createElement('d')
     
     const cvs = document.getElementById('cvs')
+
+    
     
     const ctx = cvs.getContext('2d')
     ctx.strokeStyle = 'red'
@@ -31,15 +35,15 @@
 
     // 绘制实心 (x, y, width, height)
     ctx.fillRect(0, 0, 30, 30)
-    drawLine(ctx, '绘制实心', 0, 50)
+    drawText(ctx, '绘制实心', 0, 50)
 
     // 绘制空心
     ctx.strokeRect(50, 50, 30, 30)
-    drawLine(ctx, '绘制空心', 50, 120)
+    drawText(ctx, '绘制空心', 50, 120)
     
     // 擦除rect
     ctx.clearRect(14, 14, 15, 15)
-    drawLine(ctx, '擦除矩形', 50, 30)
+    drawText(ctx, '擦除矩形', 50, 30)
 
     ctx.strokeRect(70, 70, 30, 30, 15)
 
@@ -48,11 +52,11 @@
     ctx.strokeStyle = 'green'
     // x 100, y 100 为圆心，绘制 r 为20的圆, 从6点钟画到9点钟(0度 为 3点钟方向， 2 PI也为3点钟方向)
     ctx.arc(120, 120, 20, 0.5 * Math.PI, 1 * Math.PI)
-    drawLine(ctx, '绘制弧线', 120, 130)
+    drawText(ctx, '绘制弧线', 120, 130)
     
     ctx.moveTo(150, 150)
     ctx.lineTo(150, 250)
-    drawLine(ctx, 'lineTo绘制直线', 80, 250)
+    drawText(ctx, 'lineTo绘制直线', 80, 250)
 
     // storke 后才会绘制
     
@@ -60,27 +64,27 @@
     // 而 arc 是先从目前点移动到指定位置开始画
     // 所以这里会有一条线而不是单纯一个圆
     ctx.moveTo(250, 270)
-    drawLine(ctx, 'moveto 250 270', 255, 280)
+    drawText(ctx, 'moveto 250 270', 255, 280)
     // 从此后整张画布旋转后画，原本的不受影响
     // ctx.rotate(0.5 * Math.PI)
-    drawLine(ctx, '用(arc 以圆心和半径为基础)开始绘制弧线', 200, 320,)
+    drawText(ctx, '用(arc 以圆心和半径为基础)开始绘制弧线', 200, 320,)
     ctx.arc(250, 250, 50, 0.5 * Math.PI, 0)
-    drawLine(ctx, '绘制弧线结束', 230, 250,)
+    drawText(ctx, '绘制弧线结束', 230, 250,)
     
     // 从上面的结束点开始，画一个经过(360, 340) (330, 200) r = 30 的圆
     ctx.arcTo(360, 240, 330, 200, 30,)
-    drawLine(ctx, '用(arcTo 以弧线经过的位置和半径为基础)开始绘制弧线', 200, 180,)
+    drawText(ctx, '用(arcTo 以弧线经过的位置和半径为基础)开始绘制弧线', 200, 180,)
     ctx.stroke()
     
     ctx.moveTo(500, 500)
-    drawLine(ctx, '移动到(500, 500)', 500, 500,)
+    drawText(ctx, '移动到(500, 500)', 500, 500,)
     // 绘制的是线条而不是图形
-    drawLine(ctx, 'Rect绘制的是线条而不是图形', 500, 530)
+    drawText(ctx, 'Rect绘制的是线条而不是图形', 500, 530)
     ctx.rect(400, 400, 100, 100)
     
     ctx.moveTo(200, 400)
-    drawLine(ctx, '移动到（200， 400），并经过', 100, 420)
-    drawLine(ctx, '(100, 400) (100, 300)绘制bazier曲线', 100, 440)
+    drawText(ctx, '移动到（200， 400），并经过', 100, 420)
+    drawText(ctx, '(100, 400) (100, 300)绘制bazier曲线', 100, 440)
     // drawLine(ctx, '开始绘制bazier曲线', 100, 400)
     ctx.quadraticCurveTo(100, 400, 100, 300, 40)
     // drawLine(ctx, '开始绘制bazier曲线', 100, 400)
@@ -91,8 +95,64 @@
     ctx.fillRect(100, 300, 5, 5)
     ctx.restore()
     ctx.stroke()
-    drawLine(ctx, 'arc arcto bazier 都是路径， 最上面2个是形状', 100, 540, 'red')
+    drawText(ctx, 'arc arcto bazier 都是路径， 最上面2个是形状', 100, 540, 'red')
 
+    const img = document.getElementById('img')
+    ctx.drawImage(img, 500, 0)
+    drawText(ctx, '从img tag 画图, 也可以是ImageData', 500, 100)
+
+    ctx.save()
+    ctx.shadowOffsetX = 5
+    ctx.shadowOffsetY = 5
+    ctx.shadowBlur = 4
+    ctx.shadowColor = 'red'
+    ctx.fillRect(700, 120, 100, 100)
+    drawText(ctx, '添加阴影', 700, 230)
+    ctx.restore()
+    drawText(ctx, 'restore取消阴影', 700, 250)
+    
+    ctx.save()
+    const gradient = ctx.createLinearGradient(700, 300, 750, 350)
+    gradient.addColorStop(0, 'green')
+    gradient.addColorStop(1, 'red')
+    ctx.fillStyle = gradient
+    ctx.fillRect(700, 300, 50, 50)
+    drawText(ctx, '创建渐变色（类蒙板）并使用', 700, 380)
+    drawText(ctx, '矩形需要和蒙版在同一个位置', 700, 400)
+    ctx.restore()
+
+    ctx.save()
+    const pattern = ctx.createPattern(img, 'repeat')
+    ctx.fillStyle = pattern
+    ctx.fillRect(700, 450, 50 , 100)
+    drawText(ctx, '绘制图章，和 渐变色类似 ', 700, 570)
+    ctx.restore()
+
+    // data.data 是一个 [r,g, b, a, r,g, b, a, ...] 重复的数组，存储每个像素的 RGBA 值
+    // const data = ctx.getImageData(0, 0, cvs.offsetWidth, cvs.offsetHeight)
+    // // 去除所有绿色
+    // for (let i = 0; i < data.data.length; i += 4)  {
+    //   const r = data.data[i]
+    //   const g = data.data[i + 1]
+    //   const b = data.data[i + 2]
+    //   const a = data.data[i + 3]
+    //   data.data[i] = 0
+    //   data.data[i + 1] = 0
+    //   data.data[i + 2] = 0
+    // }
+
+    // ctx.putImageData(data, 0, 0)
+    // 可以用
+    ctx.globalAlpha = 0.35
+    ctx.fillRect(0, 700, 50, 50)
+    ctx.globalAlpha = 1
+    ctx.fillRect(50, 700, 50, 50)
+    drawText(ctx, '可以用 globalAlpha 来设置透明度', 0, 770)
+
+    // 这个兼容性有问题，用于设置层叠效果，慎用
+    // ctx.globalCompositionOperation = 'xor'
+    // ctx.fillStyle = 'red'
+    // ctx.fillRect(70, 700, 50, 50)
   }
   window.addEventListener('load', main)
 </script>
