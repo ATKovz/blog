@@ -1,0 +1,7 @@
+{
+  "references": [],
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
