@@ -8,7 +8,11 @@ namespace RequireExactlyOne {
   }
   
   // 只能包含Keys中唯一的一个Key
-  type RequireExactlyOne<T, Keys extends keyof T> = any 
+  type RequireExactlyOne<T, K extends keyof T, FullKey extends keyof T = K> = K extends any // 类型分发来自动实现后面的 1:1 联合类型
+  ? Omit<T, K>
+    & Required<Pick<T, K>>
+    & Partial<Record<Exclude<FullKey, K>, never>>
+  : never
   
   const p1: RequireExactlyOne<Person, 'age' | 'gender'> = {
     name: "lolo",

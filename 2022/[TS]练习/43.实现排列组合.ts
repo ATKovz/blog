@@ -3,10 +3,16 @@ namespace Permutation {
 
   
   // ["a", "b"] | ["b", "a"]
-  type P0 = Permutation<'a' | 'b'>  // ['a', 'b'] | ['b' | 'a']
+  type P0 = Permutation<'a' | 'b'>  // ['a', 'b'] | ['b', 'a']
   // type P1 = ["a", "b", "c"] | ["a", "c", "b"] | ["b", "a", "c"] 
   // | ["b", "c", "a"] | ["c", "a", "b"] | ["c", "b", "a"]
   type P1 = Permutation<'a' | 'b' | 'c'> 
-  // 请在下面评论你的答案
-  type Permutation<T, K=T> = any// 你的实现代码
+  
+  // 本质还是利用 extends 来实现 Union Type 派发
+  type Permutation<T extends string, K extends string = T> =
+    [T] extends [never]
+      ? []
+      : T extends any 
+        ? [T, ...Permutation<Exclude<K, T>>]
+        : never
 }

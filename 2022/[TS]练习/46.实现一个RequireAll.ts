@@ -8,10 +8,10 @@ namespace RequireAllOrNone {
     gender?: number;
   }
   
-  type RequireAllOrNone<T, K extends keyof T> = any
   
   const p1: RequireAllOrNone<Person, 'age' | 'gender'> = {
     name: "lolo"
+    age: 7
   };
   
   const p2: RequireAllOrNone<Person, 'age' | 'gender'> = {
@@ -19,4 +19,9 @@ namespace RequireAllOrNone {
     age: 7,
     gender: 1
   };
+
+  // 2选1， 要么全传要么全不传
+  type RequireAllOrNone<T, K extends keyof T> = Omit<T, K> & (
+    Partial<Record<K, never>> | Required<Pick<T, K>>
+  )
 }
