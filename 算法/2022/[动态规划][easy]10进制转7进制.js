@@ -1,3 +1,8 @@
+/**
+ * @see https://leetcode-cn.com/problems/base-7/
+ * @description 给定一个整数 num，将其转化为 7 进制，并以字符串形式输出。
+ */
+
 const convertToBase7 = (c, r = [], isNegative = false) => {
   if (c < 0) {
     // 负数 flag
