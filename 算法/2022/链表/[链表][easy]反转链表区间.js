@@ -27,6 +27,7 @@ const reverseList = function (l1, start, end) {
   let i = 1
   const length = end - start
   while (i < length) {
+    // 由于要到开始的前一位，所以 i = 1 就可以
     head = head.next
     i++
   }
