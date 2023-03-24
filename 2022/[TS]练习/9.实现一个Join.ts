@@ -12,7 +12,7 @@ type JoinStrArray<Arr extends string[], Separator extends string, Result extends
   Arr extends [infer H, ...infer R]
     ? H extends string
       ? R extends string[]
-        ? `${H}${Separator}${JoinStrArray<R, Separator>}`
+        ? `${H}${JoinStrArray<R, Separator> extends '' ? '' : Separator}${JoinStrArray<R, Separator>}`
         : Arr[0]
       : Result
     : Result

@@ -15,6 +15,21 @@ namespace ToPath {
        : [...Stack, Head, ...ToPath<Rest>]
       // 结束标识，直接插入最后一个
       : S extends `${infer End}.`
-        ? [...Stack, End, 'dddddd']
+        ? [...Stack, End]
         : [...Stack, S]
+
+
+    type Merge<A extends Object, B extends Object> = {
+      [K in (keyof A | keyof B)]: K extends keyof B
+      ? K extends keyof A
+        ? A[K] | B[K]
+        : B[K]
+      : K extends keyof A
+        ? A[K]
+        : never
+    }
+
+
+    type R = Merge<{ dsd: 'teo' }, { name: 'tiny teo', gender: 'unknown' }>
 } 
+
