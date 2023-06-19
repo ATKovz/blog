@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .cvs {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="cvs" class="cvs"></canvas>
+</body>
+<script></script>
+<script>
+  const loadScript = (path) => {
+
+    return new Promise(r => {
+
+      const script = document.createElement('script')
+      script.type = "text/javascript"
+      script.src = `${path}?${Math.random()}`
+      document.body.appendChild(script)
+      
+      script.onload = r
+    })
+  }
+  window.onload = async () => {
+    await loadScript('./utils.js')
+    await loadScript('./cvs.js')
+    
+  }
+</script>
+</html>
