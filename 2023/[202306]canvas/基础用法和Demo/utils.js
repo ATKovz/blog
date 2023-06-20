@@ -1,7 +1,12 @@
-const runRaF = (fn) => {
+const sleep = (ms) => new Promise(r => setTimeout(r, ms))
+
+const runRaF = (fn, ms) => {
   requestAnimationFrame(async () => {
     await fn()
-    runRaF(fn)
+    if (ms) {
+      await sleep(ms)
+    }
+    runRaF(fn, ms)
   })
 }
 /**
@@ -52,7 +57,7 @@ const drawBezier = (ctx) => {
   ctx.restore()
 
   // ctx.fill()
-  
+
   console.log('draw');
 }
 
@@ -63,20 +68,22 @@ const rotate = (ctx, w, h, px = w, py = h) => {
   const img = new Image(w, h)
   img.width = w;
   img.height = h;
-  img.src = 'http://192.168.3.139:8080/1.png'
+  img.src = './1.png'
 
   img.onload = () => {
-    const halfWidth = px / 2
-    const halfHeight = py / 2
+    const halfWidth = w / 2
+    const halfHeight = h / 2
     // const draw = () => ctx.drawImage(img, 0, 0, 500, 200, -halfWidth, -halfHeight, 500, 200)
     const draw = () => ctx.drawImage(img, -halfWidth, -halfHeight, w, h)
-    
-    ctx.translate(halfWidth, halfHeight)
+
+    let i = 0
     runRaF(() => {
 
-      ctx.rotate(1 * Math.PI / 180)
+      ctx.resetTransform()
+      ctx.translate(px, py)
+      let deg = i < 360 ? i++ : (i = 0);
+      ctx.rotate(deg * Math.PI / 180)
       draw()
-      console.log('dar');
     })
   }
 }
@@ -99,8 +106,11 @@ const clip = (ctx, x, y, w, h) => {
   // ctx.restore()
 }
 
+const canvas_width = 500
+const canvas_height = 500
+
 const drawActions = (ctx, list) => {
   ctx.save()
-  list.forEach(fn => fn()) 
+  list.forEach(fn => fn())
   ctx.restore()
 }
